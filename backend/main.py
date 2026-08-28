@@ -5,6 +5,12 @@ from services.ocr import extract_text
 from ai.extractor import extract_product_data
 from compliance.engine import check_compliance
 
+from database.db import (
+    initialize_database,
+    save_scan,
+    get_scan_history,
+)
+
 
 app = FastAPI(
     title="AI Package Compliance API",
@@ -20,6 +26,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# Initialize database when the API starts
+initialize_database()
 
 
 @app.get("/")
@@ -51,11 +61,30 @@ async def scan(file: UploadFile = File(...)):
     # Step 3: Check compliance
     compliance_result = check_compliance(product_data)
 
+    # Step 4: Save scan to database
+    scan_id = save_scan(
+        file.filename,
+        product_data,
+        compliance_result
+    )
+
     # Return complete result
     return {
         "success": True,
+        "scan_id": scan_id,
         "filename": file.filename,
         "ocr_text": ocr_text,
         "product_data": product_data,
         "compliance": compliance_result,
+    }
+
+
+@app.get("/history")
+def history():
+
+    scans = get_scan_history()
+
+    return {
+        "success": True,
+        "scans": scans
     }
