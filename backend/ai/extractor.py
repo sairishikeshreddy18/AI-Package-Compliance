@@ -124,23 +124,3 @@ def extract_product_data(ocr_text):
         data["product_name"] = lines[0]
 
     return data
-
-
-# Test
-if __name__ == "__main__":
-
-    sample_ocr = """
-    PARLE-G BISCUITS
-    M.R.P Rs. 50
-    Net Qty 200g
-    Manufactured by ABC Foods Pvt Ltd
-    Packed by XYZ Packers
-    Imported by XYZ Imports
-    Consumer Care: 1800-123-456
-    """
-
-import json
-
-result = extract_product_data(sample_ocr)
-
-print(json.dumps(result, indent=4, ensure_ascii=False))
