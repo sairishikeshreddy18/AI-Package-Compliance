@@ -2,6 +2,7 @@ from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 
 from services.ocr import extract_text
+from ai.extractor import extract_product_data
 
 
 app = FastAPI(
@@ -11,7 +12,6 @@ app = FastAPI(
 )
 
 
-# Allow React frontend to communicate with backend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -41,11 +41,16 @@ async def scan(file: UploadFile = File(...)):
     # Read uploaded image
     image_bytes = await file.read()
 
-    # Run OCR
-    extracted_text = extract_text(image_bytes)
+    # Step 1: OCR
+    ocr_text = extract_text(image_bytes)
 
+    # Step 2: Extract product information
+    product_data = extract_product_data(ocr_text)
+
+    # Return complete result
     return {
         "success": True,
         "filename": file.filename,
-        "extracted_text": extracted_text,
+        "ocr_text": ocr_text,
+        "product_data": product_data,
     }
