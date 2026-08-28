@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from services.ocr import extract_text
 from ai.extractor import extract_product_data
+from compliance.engine import check_compliance
 
 
 app = FastAPI(
@@ -47,10 +48,14 @@ async def scan(file: UploadFile = File(...)):
     # Step 2: Extract product information
     product_data = extract_product_data(ocr_text)
 
+    # Step 3: Check compliance
+    compliance_result = check_compliance(product_data)
+
     # Return complete result
     return {
         "success": True,
         "filename": file.filename,
         "ocr_text": ocr_text,
         "product_data": product_data,
+        "compliance": compliance_result,
     }
