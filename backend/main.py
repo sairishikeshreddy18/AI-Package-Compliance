@@ -1,18 +1,20 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 
+from services.ocr import extract_text
+
 
 app = FastAPI(
-    title="Legal Metrology Compliance API",
+    title="AI Package Compliance API",
     description="Backend API for package compliance checking",
     version="1.0.0",
 )
 
 
-# Allow the React frontend to communicate with the backend
+# Allow React frontend to communicate with backend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -22,26 +24,28 @@ app.add_middleware(
 @app.get("/")
 def root():
     return {
-        "message": "Legal Metrology Compliance API is running"
+        "message": "AI Package Compliance API is running"
     }
 
 
 @app.get("/health")
 def health():
     return {
-        "status": "healthy"
+        "status": "ok"
     }
 
 
 @app.post("/scan")
-async def scan_package(file: UploadFile = File(...)):
+async def scan(file: UploadFile = File(...)):
 
-    contents = await file.read()
+    # Read uploaded image
+    image_bytes = await file.read()
+
+    # Run OCR
+    extracted_text = extract_text(image_bytes)
 
     return {
         "success": True,
         "filename": file.filename,
-        "content_type": file.content_type,
-        "file_size": len(contents),
-        "message": "Image received successfully",
+        "extracted_text": extracted_text,
     }
